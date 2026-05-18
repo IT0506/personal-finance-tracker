@@ -58,8 +58,7 @@ public class AuthService {
             User user = optional.get();
 
             if (user.getPassword().equals(request.getPassword())) {
-                String token = jwtUtil.generateToken(user.getEmail());
-                return new AuthResponse(token, user.getUserId());
+                return new AuthResponse("dummy-token", user.getUserId());
             }
         }
 
