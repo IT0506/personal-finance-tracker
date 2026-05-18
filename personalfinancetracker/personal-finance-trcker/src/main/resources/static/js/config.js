@@ -1,1 +1,1 @@
-const API_BASE_URL = "https://personal-finance-tracker-tvew.onrender.com";
+const BASE_URL = "https://personal-finance-tracker-tvew.onrender.com";
