@@ -1,22 +1,27 @@
-// dashboard.js
+// ==========================================================
+// Personal Finance Tracker - dashboard.js
+// Working Features:
+// ✅ Load dashboard
+// ✅ Add transaction
+// ✅ Delete transaction
+// ✅ Save financial goal
+// ✅ Show current goal
+// ✅ Export CSV
+// ✅ Export PDF
+// ✅ AI Insights
+// ✅ Logout
+// ==========================================================
 
+// API base URL from config.js
 const API_BASE_URL =
     typeof BASE_URL !== "undefined"
         ? BASE_URL
         : "http://localhost:8080";
 
-// =========================
-// Initialize Dashboard
-// =========================
+// ==========================================================
+// INITIALIZE DASHBOARD
+// ==========================================================
 document.addEventListener("DOMContentLoaded", () => {
-    loadDashboard();
-});
-
-// =========================
-// Load Dashboard
-// =========================
-async function loadDashboard() {
-    const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
 
     if (!token) {
@@ -24,17 +29,23 @@ async function loadDashboard() {
         return;
     }
 
-    if (!userId) {
-        console.warn("userId not found in localStorage.");
-        return;
-    }
+    loadDashboard();
+    loadGoal();
+});
+
+// ==========================================================
+// LOAD DASHBOARD
+// ==========================================================
+async function loadDashboard() {
+    const userId = localStorage.getItem("userId");
+    const token = localStorage.getItem("token");
+
+    if (!userId || !token) return;
 
     try {
-        // Your backend supports GET /transactions/user/{userId}
         const response = await fetch(
             `${API_BASE_URL}/transactions/user/${userId}`,
             {
-                method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`
                 }
@@ -42,10 +53,7 @@ async function loadDashboard() {
         );
 
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error("Failed to load transactions:", errorText);
-            alert("Failed to load transactions.");
-            return;
+            throw new Error(await response.text());
         }
 
         const transactions = await response.json();
@@ -59,9 +67,9 @@ async function loadDashboard() {
         transactions.forEach(txn => {
             const amount = Number(txn.amount) || 0;
 
-            if (txn.type === "INCOME") {
+            if ((txn.type || "").toUpperCase() === "INCOME") {
                 totalIncome += amount;
-            } else if (txn.type === "EXPENSE") {
+            } else {
                 totalExpense += amount;
             }
 
@@ -71,7 +79,7 @@ async function loadDashboard() {
             row.innerHTML = `
                 <td>${txn.txnDate || ""}</td>
                 <td>${txn.type || ""}</td>
-                <td>${amount.toFixed(2)}</td>
+                <td>₹ ${amount.toFixed(2)}</td>
                 <td>${txn.category || ""}</td>
                 <td>${txn.description || ""}</td>
                 <td>
@@ -84,7 +92,7 @@ async function loadDashboard() {
             table.appendChild(row);
         });
 
-        // Update summary cards
+        // Update summary
         document.getElementById("totalIncome").textContent =
             totalIncome.toFixed(2);
 
@@ -94,20 +102,23 @@ async function loadDashboard() {
         document.getElementById("balance").textContent =
             (totalIncome - totalExpense).toFixed(2);
 
+        // Update goal progress
+        updateGoalProgress(totalIncome - totalExpense);
+
     } catch (error) {
         console.error("Dashboard load error:", error);
         alert("Unable to load dashboard.");
     }
 }
 
-// =========================
-// Add Transaction
-// =========================
+// ==========================================================
+// ADD TRANSACTION
+// ==========================================================
 async function addTransaction() {
     const userId = localStorage.getItem("userId");
     const token = localStorage.getItem("token");
 
-    if (!token || !userId) {
+    if (!userId || !token) {
         window.location.href = "/index.html";
         return;
     }
@@ -125,11 +136,11 @@ async function addTransaction() {
 
     const transaction = {
         userId: Number(userId),
-        type: type,
+        type,
         amount: parseFloat(amount),
-        category: category,
-        description: description,
-        txnDate: txnDate
+        category,
+        description,
+        txnDate
     };
 
     try {
@@ -142,37 +153,33 @@ async function addTransaction() {
             body: JSON.stringify(transaction)
         });
 
-        if (response.ok) {
-            alert("Transaction added successfully!");
-
-            // Clear form
-            document.getElementById("amount").value = "";
-            document.getElementById("category").value = "";
-            document.getElementById("description").value = "";
-            document.getElementById("txnDate").value = "";
-
-            await loadDashboard();
-        } else {
-            const errorText = await response.text();
-            console.error("Add transaction failed:", errorText);
-            alert("Failed to add transaction.");
+        if (!response.ok) {
+            throw new Error(await response.text());
         }
+
+        alert("Transaction added successfully!");
+
+        // Clear form
+        document.getElementById("amount").value = "";
+        document.getElementById("category").value = "";
+        document.getElementById("description").value = "";
+        document.getElementById("txnDate").value = "";
+
+        loadDashboard();
 
     } catch (error) {
         console.error("Add transaction error:", error);
-        alert("Unable to connect to server.");
+        alert("Failed to add transaction.");
     }
 }
 
-// =========================
-// Delete Transaction
-// =========================
+// ==========================================================
+// DELETE TRANSACTION
+// ==========================================================
 async function deleteTransaction(id) {
     const token = localStorage.getItem("token");
 
-    if (!confirm("Delete this transaction?")) {
-        return;
-    }
+    if (!confirm("Delete this transaction?")) return;
 
     try {
         const response = await fetch(
@@ -185,39 +192,206 @@ async function deleteTransaction(id) {
             }
         );
 
-        if (response.ok) {
-            await loadDashboard();
-        } else {
-            const errorText = await response.text();
-            console.error("Delete failed:", errorText);
-            alert("Delete failed.");
+        if (!response.ok) {
+            throw new Error(await response.text());
         }
 
+        loadDashboard();
+
     } catch (error) {
-        console.error("Delete error:", error);
-        alert("Unable to delete transaction.");
+        console.error("Delete transaction error:", error);
+        alert("Delete failed.");
     }
 }
+
+// ==========================================================
+// SAVE FINANCIAL GOAL
+// ==========================================================
+function saveGoal() {
+    const goalName = document.getElementById("goalName").value.trim();
+    const goalAmount = document.getElementById("goalAmount").value.trim();
+
+    if (!goalName || !goalAmount) {
+        alert("Please enter goal name and amount.");
+        return;
+    }
+
+    const goal = {
+        name: goalName,
+        amount: parseFloat(goalAmount)
+    };
+
+    localStorage.setItem("financialGoal", JSON.stringify(goal));
+
+    document.getElementById("goalName").value = "";
+    document.getElementById("goalAmount").value = "";
+
+    loadGoal();
+    alert("Goal saved successfully!");
+}
+
+// ==========================================================
+// LOAD GOAL
+// ==========================================================
+function loadGoal() {
+    const savedGoal = localStorage.getItem("financialGoal");
+
+    const goalDisplay = document.getElementById("goalDisplay");
+    const goalProgress = document.getElementById("goalProgress");
+
+    if (!goalDisplay || !goalProgress) return;
+
+    if (!savedGoal) {
+        goalDisplay.textContent = "No goal set";
+        goalProgress.textContent = "";
+        return;
+    }
+
+    const goal = JSON.parse(savedGoal);
+
+    goalDisplay.textContent =
+        `${goal.name} - ₹ ${Number(goal.amount).toFixed(2)}`;
+
+    updateGoalProgress();
+}
+
+// ==========================================================
+// UPDATE GOAL PROGRESS
+// ==========================================================
+function updateGoalProgress(currentBalance = null) {
+    const savedGoal = localStorage.getItem("financialGoal");
+
+    if (!savedGoal) return;
+
+    const goal = JSON.parse(savedGoal);
+    const goalProgress = document.getElementById("goalProgress");
+
+    if (!goalProgress) return;
+
+    if (currentBalance === null) {
+        currentBalance = parseFloat(
+            document.getElementById("balance").textContent || "0"
+        );
+    }
+
+    const percentage = Math.min(
+        (currentBalance / goal.amount) * 100,
+        100
+    );
+
+    goalProgress.textContent =
+        `Saved ₹ ${currentBalance.toFixed(2)} of ₹ ${goal.amount.toFixed(2)} `
+        + `(${percentage.toFixed(1)}%)`;
+}
+
+// ==========================================================
+// EXPORT CSV
+// ==========================================================
+async function exportCSV() {
+    const token = localStorage.getItem("token");
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/reports/csv`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        const blob = await response.blob();
+        downloadFile(blob, "transactions.csv");
+
+    } catch (error) {
+        console.error("CSV export error:", error);
+        alert("Failed to export CSV.");
+    }
+}
+
+// ==========================================================
+// EXPORT PDF
+// ==========================================================
+async function exportPDF() {
+    const token = localStorage.getItem("token");
+
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/reports/pdf`,
+            {
+                headers: {
+                    "Authorization": `Bearer ${token}`
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(await response.text());
+        }
+
+        const blob = await response.blob();
+        downloadFile(blob, "financial-report.pdf");
+
+    } catch (error) {
+        console.error("PDF export error:", error);
+        alert("Failed to export PDF.");
+    }
+}
+
+// ==========================================================
+// DOWNLOAD FILE HELPER
+// ==========================================================
+function downloadFile(blob, filename) {
+    const url = window.URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+
+    window.URL.revokeObjectURL(url);
+}
+
+// ==========================================================
+// AI INSIGHTS
+// ==========================================================
 async function getAIInsights() {
     const token = localStorage.getItem("token");
     const userId = localStorage.getItem("userId");
 
-    const response = await fetch(`/ai/analyze`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "text/plain",
-            "Authorization": `Bearer ${token}`
-        },
-        body: `Analyze transactions for user ${userId}`
-    });
+    try {
+        const response = await fetch(
+            `${API_BASE_URL}/ai/analyze`,
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "text/plain",
+                    "Authorization": `Bearer ${token}`
+                },
+                body: `Analyze transactions for user ${userId}`
+            }
+        );
 
-    const result = await response.text();
-    document.getElementById("aiInsights").innerText = result;
+        const result = await response.text();
+        document.getElementById("aiInsights").innerText = result;
+
+    } catch (error) {
+        console.error("AI Insights error:", error);
+        document.getElementById("aiInsights").innerText =
+            "Unable to generate AI insights.";
+    }
 }
 
-// =========================
-// Logout
-// =========================
+// ==========================================================
+// LOGOUT
+// ==========================================================
 function logout() {
     localStorage.removeItem("token");
     localStorage.removeItem("userId");
