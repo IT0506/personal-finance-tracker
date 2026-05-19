@@ -28,7 +28,15 @@ public class AuthController {
 
     // Login existing user
     @PostMapping("/login")
-    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest request) {
-        return ResponseEntity.ok(service.login(request));
+public ResponseEntity<?> login(@RequestBody AuthRequest request) {
+    try {
+        AuthResponse response = service.login(request);
+        return ResponseEntity.ok(response);
+    } catch (Exception e) {
+        e.printStackTrace(); // Shows exact issue in Render logs
+        return ResponseEntity
+                .status(401)
+                .body(e.getMessage());
     }
+}
 }
