@@ -1,91 +1,210 @@
 @charset "UTF-8";
-/* =========================
-   Global Styles
-========================= */
 
+/* =========================================
+   GOOGLE FONT
+========================================= */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* =========================================
+   CSS VARIABLES
+========================================= */
+:root {
+    --primary: #4f46e5;
+    --primary-dark: #3730a3;
+    --secondary: #06b6d4;
+    --success: #10b981;
+    --danger: #ef4444;
+    --warning: #f59e0b;
+
+    --bg: linear-gradient(135deg, #e0f2fe 0%, #f8fafc 50%, #eef2ff 100%);
+    --card-bg: rgba(255, 255, 255, 0.88);
+    --glass-border: rgba(255, 255, 255, 0.35);
+
+    --text: #0f172a;
+    --text-light: #64748b;
+
+    --shadow: 0 12px 30px rgba(15, 23, 42, 0.10);
+    --shadow-hover: 0 18px 40px rgba(79, 70, 229, 0.18);
+
+    --radius: 20px;
+    --transition: all 0.3s ease;
+}
+
+/* =========================================
+   RESET
+========================================= */
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+html {
+    scroll-behavior: smooth;
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background: #f4f6f9;
-    margin: 0;
-    padding: 0;
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    color: var(--text);
+    background: var(--bg);
+    background-attachment: fixed;
+    line-height: 1.6;
+    padding: 30px 0;
+    position: relative;
+    overflow-x: hidden;
 }
 
+/* Decorative background blobs */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    border-radius: 50%;
+    z-index: -1;
+    filter: blur(60px);
+    opacity: 0.35;
+}
+
+body::before {
+    width: 320px;
+    height: 320px;
+    background: #6366f1;
+    top: -80px;
+    left: -80px;
+}
+
+body::after {
+    width: 380px;
+    height: 380px;
+    background: #06b6d4;
+    bottom: -120px;
+    right: -100px;
+}
+
+/* =========================================
+   MAIN CONTAINER
+========================================= */
 .container {
-    width: 90%;
+    width: min(1200px, 92%);
     margin: auto;
-    padding: 20px;
+    padding: 40px;
+    background: var(--card-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 28px;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    box-shadow: var(--shadow);
+    animation: fadeInUp 0.8s ease;
 }
 
-h1, h2 {
+/* =========================================
+   TYPOGRAPHY
+========================================= */
+h1 {
     text-align: center;
-    color: #333;
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
+h2 {
+    margin: 40px 0 20px;
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--text);
+    position: relative;
+}
+
+h2::after {
+    content: "";
+    width: 70px;
+    height: 4px;
+    display: block;
+    margin: 10px auto 0;
+    border-radius: 999px;
+    background: linear-gradient(90deg, var(--primary), var(--secondary));
+}
+
+h3 {
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+}
+
+p {
+    color: var(--text-light);
+}
+
+/* =========================================
+   BUTTONS
+========================================= */
 button {
-    padding: 10px 15px;
-    margin: 5px;
     border: none;
+    border-radius: 12px;
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
-    border-radius: 5px;
+    transition: var(--transition);
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #fff;
+    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.25);
 }
 
 button:hover {
-    opacity: 0.9;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+}
+
+button:active {
+    transform: scale(0.98);
 }
 
 .secondary {
-    background: #444;
-    color: white;
+    background: linear-gradient(135deg, #334155, #0f172a);
 }
 
-.card-grid {
-    display: flex;
-    justify-content: space-around;
-    margin: 20px 0;
+.secondary:hover {
+    box-shadow: 0 10px 25px rgba(15, 23, 42, 0.25);
 }
 
-.card {
-    padding: 15px;
-    border-radius: 10px;
-    background: white;
-    width: 30%;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    text-align: center;
-}
-
-.income { border-left: 5px solid green; }
-.expense { border-left: 5px solid red; }
-.balance { border-left: 5px solid blue; }
-
-.table {
+/* =========================================
+   INPUTS & SELECTS
+========================================= */
+input,
+select,
+textarea {
     width: 100%;
-    border-collapse: collapse;
-    background: white;
+    padding: 14px 16px;
+    border: 1px solid #dbe2ea;
+    border-radius: 12px;
+    background: rgba(255, 255, 255, 0.9);
+    font-family: inherit;
+    font-size: 0.95rem;
+    color: var(--text);
+    transition: var(--transition);
 }
 
-.table th, .table td {
-    padding: 10px;
-    border: 1px solid #ddd;
-    text-align: center;
+input:focus,
+select:focus,
+textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
 }
 
-input, select {
-    padding: 8px;
-    margin: 5px;
-}
-/* =========================
-   Links
-========================= */
-
+/* =========================================
+   LINKS
+========================================= */
 a {
-    color: #60a5fa;
+    color: var(--primary);
+    font-weight: 600;
     text-decoration: none;
 }
 
@@ -93,24 +212,234 @@ a:hover {
     text-decoration: underline;
 }
 
-/* =========================
-   AI Insights Box
-========================= */
+.link {
+    margin-top: 15px;
+    text-align: center;
+}
 
+/* =========================================
+   FORMS
+========================================= */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+}
+
+/* =========================================
+   SUMMARY CARDS
+========================================= */
+.card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 24px;
+    margin: 30px 0;
+}
+
+.card {
+    background: rgba(255, 255, 255, 0.92);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    text-align: center;
+    box-shadow: var(--shadow);
+    transition: var(--transition);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(10px);
+}
+
+.card:hover {
+    transform: translateY(-6px);
+    box-shadow: var(--shadow-hover);
+}
+
+.card p {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+}
+
+/* Colored top bars */
+.income {
+    border-top: 5px solid var(--success);
+}
+
+.expense {
+    border-top: 5px solid var(--danger);
+}
+
+.balance {
+    border-top: 5px solid var(--primary);
+}
+
+/* =========================================
+   TABLE
+========================================= */
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: rgba(255, 255, 255, 0.96);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+}
+
+.table thead {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #fff;
+}
+
+.table th,
+.table td {
+    padding: 14px 12px;
+    text-align: center;
+}
+
+.table tbody tr:nth-child(even) {
+    background: #f8fafc;
+}
+
+.table tbody tr:hover {
+    background: #eef2ff;
+}
+
+/* =========================================
+   AI INSIGHTS
+========================================= */
 #aiInsights {
-    padding: 15px;
-    border-radius: 10px;
-    background: rgba(59, 130, 246, 0.1);
-    border: 1px solid #3b82f6;
+    background: linear-gradient(135deg, #eff6ff, #ecfeff);
+    border: 1px solid #bfdbfe;
+    padding: 20px;
+    border-radius: 16px;
+    box-shadow: var(--shadow);
+    color: var(--text);
+    white-space: pre-line;
+    line-height: 1.8;
+}
+
+/* =========================================
+   GOAL BOX
+========================================= */
+#goalDisplay {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-dark);
+}
+
+#goalProgress {
+    margin-top: 8px;
+    font-weight: 500;
+    color: var(--text-light);
+}
+
+/* =========================================
+   AUTH PAGES
+========================================= */
+.container[style*="max-width: 400px"] {
+    max-width: 420px !important;
+    margin-top: 60px;
+}
+
+.container[style*="max-width: 400px"] h2 {
+    margin-top: 0;
+}
+
+.container[style*="max-width: 400px"] input {
+    margin-bottom: 14px;
+}
+
+.container[style*="max-width: 400px"] button {
+    width: 100%;
     margin-top: 10px;
 }
 
-/* =========================
-   Responsive
-========================= */
+/* =========================================
+   UTILITIES
+========================================= */
+.text-center {
+    text-align: center;
+}
+
+.mt-20 {
+    margin-top: 20px;
+}
+
+.mb-20 {
+    margin-bottom: 20px;
+}
+
+/* =========================================
+   ANIMATIONS
+========================================= */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(25px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+@media (max-width: 992px) {
+    h1 {
+        font-size: 2.4rem;
+    }
+
+    h2 {
+        font-size: 1.7rem;
+    }
+
+    .container {
+        padding: 28px 22px;
+    }
+}
 
 @media (max-width: 768px) {
-    .card-grid {
+    body {
+        padding: 15px 0;
+    }
+
+    .container {
+        width: 95%;
+        padding: 22px 16px;
+        border-radius: 20px;
+    }
+
+    h1 {
+        font-size: 2rem;
+    }
+
+    h2 {
+        font-size: 1.45rem;
+    }
+
+    .table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    button {
+        width: 100%;
+    }
+
+    .form-grid {
         grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    h1 {
+        font-size: 1.75rem;
+    }
+
+    .card p {
+        font-size: 1.35rem;
     }
 }
