@@ -52,16 +52,26 @@ public class AuthService {
      */
     public AuthResponse login(AuthRequest request) {
 
-        Optional<User> optional = repo.findByEmail(request.getEmail());
-
-        if (optional.isPresent()) {
-            User user = optional.get();
-
-            if (user.getPassword().equals(request.getPassword())) {
-                return new AuthResponse("dummy-token", user.getUserId());
-            }
-        }
-
-        throw new RuntimeException("Invalid credentials");
+    // Validate request
+    if (request == null ||
+        request.getEmail() == null ||
+        request.getPassword() == null) {
+        throw new RuntimeException("Email and password are required");
     }
+
+    // Find user
+    User user = repo.findByEmail(request.getEmail().trim())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+    // Validate password
+    if (!user.getPassword().equals(request.getPassword())) {
+        throw new RuntimeException("Invalid password");
+    }
+
+    // Generate JWT token
+    String token = jwtUtil.generateToken(user.getEmail());
+
+    // Return response
+    return new AuthResponse(token, user.getUserId());
+}
 }
